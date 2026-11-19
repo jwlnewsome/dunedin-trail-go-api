@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DunedinTrails.Functions.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d8762c2d0644cb98a62f1bc01fcca5387f2fc49d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fc04c00f6932105e51d884b423f671b223087db5")]
 [assembly: System.Reflection.AssemblyProductAttribute("DunedinTrails.Functions.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DunedinTrails.Functions.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

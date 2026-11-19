@@ -153,3 +153,4 @@ C:\Users\jwlne\Downloads\DunedinTrails.Functions\tests\DunedinTrails.Functions.T
 C:\Users\jwlne\Downloads\DunedinTrails.Functions\tests\DunedinTrails.Functions.Tests\obj\Debug\net10.0\DunedinTrails.Functions.Tests.pdb
 C:\Users\jwlne\Downloads\DunedinTrails.Functions\tests\DunedinTrails.Functions.Tests\obj\Debug\net10.0\DunedinTrails.Functions.Tests.genruntimeconfig.cache
 C:\Users\jwlne\Downloads\DunedinTrails.Functions\tests\DunedinTrails.Functions.Tests\obj\Debug\net10.0\ref\DunedinTrails.Functions.Tests.dll
+C:\Users\jwlne\Downloads\DunedinTrails.Functions\tests\DunedinTrails.Functions.Tests\obj\Debug\net10.0\DunedinTrails.Functions.Tests.sourcelink.json

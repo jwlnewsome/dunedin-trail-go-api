@@ -6,7 +6,7 @@ using Microsoft.Azure.Functions.Worker;
 namespace DunedinTrails.Functions.Functions;
 
 /// <summary>
-/// Trail list used by the public pages; replaces <c>base44.entities.Trail.list('-created_date', 1000)</c>.
+/// Trail list for the map; replaces <c>base44.entities.Trail.list('-created_date', 1000)</c>.
 /// </summary>
 public sealed class GetTrailsForMap(EntityStore store)
 {
@@ -17,10 +17,9 @@ public sealed class GetTrailsForMap(EntityStore store)
     public static readonly IReadOnlySet<string> SortableFields =
         new HashSet<string>(StringComparer.Ordinal) { "created_date", "updated_date", "name", "distance_km" };
 
-    // Anonymous: Trail reads are public (rls.read = null) and the Explore page is unauthenticated.
     [Function(nameof(GetTrailsForMap))]
     public IActionResult Run(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "trails")] HttpRequest req)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "trails")] HttpRequest req)
     {
         var sort = req.Query["sort"].FirstOrDefault() is { Length: > 0 } s ? s : DefaultSort;
         var limit = DefaultLimit;
