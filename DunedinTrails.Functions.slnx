@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DunedinTrails.Functions/DunedinTrails.Functions.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DunedinTrails.Functions.Tests/DunedinTrails.Functions.Tests.csproj" />
+  </Folder>
+</Solution>
