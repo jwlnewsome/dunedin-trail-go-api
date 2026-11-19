@@ -13,14 +13,14 @@ public sealed class AuthFunctions(EntityStore store)
 {
     [Function("GetMe")]
     public IActionResult Me(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "auth/me")] HttpRequest req) =>
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "auth/me")] HttpRequest req) =>
         store.Get("User", SeedData.AdminUserId) is { } user
             ? ApiJson.Ok(user)
             : ApiJson.Error(StatusCodes.Status401Unauthorized, "Not signed in.");
 
     [Function("UpdateMe")]
     public async Task<IActionResult> UpdateMe(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", "patch", Route = "auth/me")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "put", "patch", Route = "auth/me")] HttpRequest req,
         CancellationToken cancellationToken)
     {
         if (await EntityFunctions.ReadBodyAsync(req, cancellationToken) is not JsonObject patch)

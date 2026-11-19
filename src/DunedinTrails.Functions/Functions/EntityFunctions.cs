@@ -16,7 +16,7 @@ public sealed class EntityFunctions(EntityStore store)
 
     [Function("ListEntities")]
     public IActionResult List(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "entities/{entity}")] HttpRequest req, string entity)
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "entities/{entity}")] HttpRequest req, string entity)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
 
@@ -52,7 +52,7 @@ public sealed class EntityFunctions(EntityStore store)
 
     [Function("GetEntity")]
     public IActionResult Get(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "entities/{entity}/{id}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "entities/{entity}/{id}")] HttpRequest req,
         string entity, string id)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
@@ -61,7 +61,7 @@ public sealed class EntityFunctions(EntityStore store)
 
     [Function("CreateEntity")]
     public async Task<IActionResult> Create(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "entities/{entity}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "entities/{entity}")] HttpRequest req,
         string entity, CancellationToken cancellationToken)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
@@ -74,7 +74,7 @@ public sealed class EntityFunctions(EntityStore store)
 
     [Function("BulkCreateEntities")]
     public async Task<IActionResult> BulkCreate(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "entities/{entity}/bulk")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "entities/{entity}/bulk")] HttpRequest req,
         string entity, CancellationToken cancellationToken)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
@@ -88,7 +88,7 @@ public sealed class EntityFunctions(EntityStore store)
 
     [Function("UpdateEntity")]
     public async Task<IActionResult> Update(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", "patch", Route = "entities/{entity}/{id}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "put", "patch", Route = "entities/{entity}/{id}")] HttpRequest req,
         string entity, string id, CancellationToken cancellationToken)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
@@ -101,7 +101,7 @@ public sealed class EntityFunctions(EntityStore store)
 
     [Function("DeleteEntity")]
     public IActionResult Delete(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "entities/{entity}/{id}")] HttpRequest req,
+        [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "entities/{entity}/{id}")] HttpRequest req,
         string entity, string id)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);

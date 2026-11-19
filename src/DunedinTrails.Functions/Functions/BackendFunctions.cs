@@ -12,7 +12,7 @@ public sealed class BackendFunctions(EntityStore store)
 {
     [Function("InvokeBackendFunction")]
     public IActionResult Invoke(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "functions/{name}")] HttpRequest req, string name) =>
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "functions/{name}")] HttpRequest req, string name) =>
         name switch
         {
             // Real version scrapes the DOC alerts API; no external calls in the mock.
