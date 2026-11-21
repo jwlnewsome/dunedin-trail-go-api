@@ -8,7 +8,7 @@ namespace DunedinTrails.Functions.Functions;
 /// <summary>
 /// Trail list for the map; replaces <c>base44.entities.Trail.list('-created_date', 1000)</c>.
 /// </summary>
-public sealed class GetTrailsForMap(EntityStore store)
+public sealed class GetTrailsForMap(IEntityStore store)
 {
     public const string DefaultSort = "-created_date";
     public const int DefaultLimit = 1000;
@@ -18,8 +18,9 @@ public sealed class GetTrailsForMap(EntityStore store)
         new HashSet<string>(StringComparer.Ordinal) { "created_date", "updated_date", "name", "distance_km" };
 
     [Function(nameof(GetTrailsForMap))]
-    public IActionResult Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "trails")] HttpRequest req)
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "trails")] HttpRequest req,
+        CancellationToken cancellationToken = default)
     {
         var sort = req.Query["sort"].FirstOrDefault() is { Length: > 0 } s ? s : DefaultSort;
         var limit = DefaultLimit;
@@ -36,6 +37,6 @@ public sealed class GetTrailsForMap(EntityStore store)
                 $"sort must be one of: {string.Join(", ", SortableFields)} (prefix with '-' for descending).");
         }
 
-        return ApiJson.Ok(store.List("Trail", sort: sort, limit: limit));
+        return ApiJson.Ok(await store.ListAsync("Trail", sort: sort, limit: limit, cancellationToken: cancellationToken));
     }
 }

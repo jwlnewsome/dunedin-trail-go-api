@@ -9,12 +9,13 @@ namespace DunedinTrails.Functions.Functions;
 /// <summary>
 /// Mock replacement for <c>base44.auth</c>: every caller is the seeded admin user.
 /// </summary>
-public sealed class AuthFunctions(EntityStore store)
+public sealed class AuthFunctions(IEntityStore store)
 {
     [Function("GetMe")]
-    public IActionResult Me(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "auth/me")] HttpRequest req) =>
-        store.Get("User", SeedData.AdminUserId) is { } user
+    public async Task<IActionResult> Me(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "auth/me")] HttpRequest req,
+        CancellationToken cancellationToken = default) =>
+        await store.GetAsync("User", SeedData.AdminUserId, cancellationToken) is { } user
             ? ApiJson.Ok(user)
             : ApiJson.Error(StatusCodes.Status401Unauthorized, "Not signed in.");
 
@@ -31,7 +32,7 @@ public sealed class AuthFunctions(EntityStore store)
         // Identity fields can't be changed through updateMe (matches Base44).
         foreach (var field in new[] { "email", "role" }) patch.Remove(field);
 
-        return store.Update("User", SeedData.AdminUserId, patch) is { } user
+        return await store.UpdateAsync("User", SeedData.AdminUserId, patch, cancellationToken) is { } user
             ? ApiJson.Ok(user)
             : ApiJson.Error(StatusCodes.Status401Unauthorized, "Not signed in.");
     }

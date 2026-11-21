@@ -8,15 +8,16 @@ using Microsoft.Azure.Functions.Worker;
 namespace DunedinTrails.Functions.Functions;
 
 /// <summary>
-/// Generic CRUD over <see cref="EntityStore"/>, replacing <c>base44.entities.{Entity}.*</c>.
+/// Generic CRUD over <see cref="IEntityStore"/>, replacing <c>base44.entities.{Entity}.*</c>.
 /// </summary>
-public sealed class EntityFunctions(EntityStore store)
+public sealed class EntityFunctions(IEntityStore store)
 {
     public const int MaxLimit = 5000;
 
     [Function("ListEntities")]
-    public IActionResult List(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "entities/{entity}")] HttpRequest req, string entity)
+    public async Task<IActionResult> List(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "entities/{entity}")] HttpRequest req, string entity,
+        CancellationToken cancellationToken = default)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
 
@@ -42,7 +43,7 @@ public sealed class EntityFunctions(EntityStore store)
 
         try
         {
-            return ApiJson.Ok(store.List(entity, filter, req.Query["sort"].FirstOrDefault(), limit, skip ?? 0));
+            return ApiJson.Ok(await store.ListAsync(entity, filter, req.Query["sort"].FirstOrDefault(), limit, skip ?? 0, cancellationToken));
         }
         catch (ArgumentException ex)
         {
@@ -51,12 +52,12 @@ public sealed class EntityFunctions(EntityStore store)
     }
 
     [Function("GetEntity")]
-    public IActionResult Get(
+    public async Task<IActionResult> Get(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "entities/{entity}/{id}")] HttpRequest req,
-        string entity, string id)
+        string entity, string id, CancellationToken cancellationToken = default)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
-        return store.Get(entity, id) is { } record ? ApiJson.Ok(record) : NotFound(entity, id);
+        return await store.GetAsync(entity, id, cancellationToken) is { } record ? ApiJson.Ok(record) : NotFound(entity, id);
     }
 
     [Function("CreateEntity")]
@@ -69,7 +70,7 @@ public sealed class EntityFunctions(EntityStore store)
         {
             return ApiJson.Error(StatusCodes.Status400BadRequest, "Request body must be a JSON object.");
         }
-        return ApiJson.Ok(store.Create(entity, data, SeedData.AdminEmail), StatusCodes.Status201Created);
+        return ApiJson.Ok(await store.CreateAsync(entity, data, SeedData.AdminEmail, cancellationToken), StatusCodes.Status201Created);
     }
 
     [Function("BulkCreateEntities")]
@@ -82,7 +83,9 @@ public sealed class EntityFunctions(EntityStore store)
         {
             return ApiJson.Error(StatusCodes.Status400BadRequest, "Request body must be a JSON array of objects.");
         }
-        var created = items.Select(i => store.Create(entity, i!.AsObject(), SeedData.AdminEmail)).ToList();
+        var created = new List<JsonObject>();
+        foreach (var item in items)
+            created.Add(await store.CreateAsync(entity, item!.AsObject(), SeedData.AdminEmail, cancellationToken));
         return ApiJson.Ok(created, StatusCodes.Status201Created);
     }
 
@@ -96,16 +99,16 @@ public sealed class EntityFunctions(EntityStore store)
         {
             return ApiJson.Error(StatusCodes.Status400BadRequest, "Request body must be a JSON object.");
         }
-        return store.Update(entity, id, patch) is { } record ? ApiJson.Ok(record) : NotFound(entity, id);
+        return await store.UpdateAsync(entity, id, patch, cancellationToken) is { } record ? ApiJson.Ok(record) : NotFound(entity, id);
     }
 
     [Function("DeleteEntity")]
-    public IActionResult Delete(
+    public async Task<IActionResult> Delete(
         [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "entities/{entity}/{id}")] HttpRequest req,
-        string entity, string id)
+        string entity, string id, CancellationToken cancellationToken = default)
     {
         if (!EntityStore.IsKnownEntity(entity)) return UnknownEntity(entity);
-        return store.Delete(entity, id) ? ApiJson.Ok(new { success = true }) : NotFound(entity, id);
+        return await store.DeleteAsync(entity, id, cancellationToken) ? ApiJson.Ok(new { success = true }) : NotFound(entity, id);
     }
 
     internal static async Task<JsonNode?> ReadBodyAsync(HttpRequest req, CancellationToken cancellationToken)

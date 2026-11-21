@@ -8,7 +8,7 @@ namespace DunedinTrails.Functions.Data;
 /// entity name and id, and carry the Base44 system fields (id, created_date, updated_date, created_by).
 /// Data is seeded on start-up and lost when the host restarts.
 /// </summary>
-public sealed class EntityStore
+public sealed class EntityStore : IEntityStore
 {
     public static readonly IReadOnlySet<string> EntityNames = new HashSet<string>(StringComparer.Ordinal)
     {
@@ -38,23 +38,40 @@ public sealed class EntityStore
     {
         lock (_gate)
         {
-            IEnumerable<JsonObject> rows = Table(entity).Values.Where(r => Matches(r, filter));
-            if (!string.IsNullOrWhiteSpace(sort))
-            {
-                var descending = sort.StartsWith('-');
-                var field = sort.TrimStart('-', '+');
-                var comparer = Comparer<JsonNode?>.Create(CompareValues);
-                rows = descending
-                    ? rows.OrderByDescending(r => r[field], comparer)
-                    : rows.OrderBy(r => r[field], comparer);
-            }
-
-            rows = rows.Skip(Math.Max(0, skip));
-            if (limit is > 0) rows = rows.Take(limit.Value);
-            return rows.Select(Clone).ToList();
+            return ApplyList(Table(entity).Values, filter, sort, limit, skip);
         }
     }
 
+    internal static IReadOnlyList<JsonObject> ApplyList(IEnumerable<JsonObject> source, JsonObject? filter, string? sort, int? limit, int skip)
+    {
+        IEnumerable<JsonObject> rows = source.Where(r => Matches(r, filter));
+        if (!string.IsNullOrWhiteSpace(sort))
+        {
+            var descending = sort.StartsWith('-');
+            var field = sort.TrimStart('-', '+');
+            var comparer = Comparer<JsonNode?>.Create(CompareValues);
+            rows = descending ? rows.OrderByDescending(r => r[field], comparer) : rows.OrderBy(r => r[field], comparer);
+        }
+        rows = rows.Skip(Math.Max(0, skip));
+        if (limit is > 0) rows = rows.Take(limit.Value);
+        return rows.Select(Clone).ToList();
+    }
+
+    public Task<IReadOnlyList<JsonObject>> ListAsync(string entity, JsonObject? filter = null, string? sort = null,
+        int? limit = null, int skip = 0, CancellationToken cancellationToken = default) =>
+        Task.FromResult(List(entity, filter, sort, limit, skip));
+
+    public Task<JsonObject?> GetAsync(string entity, string id, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Get(entity, id));
+
+    public Task<JsonObject> CreateAsync(string entity, JsonObject data, string? createdBy, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Create(entity, data, createdBy));
+
+    public Task<JsonObject?> UpdateAsync(string entity, string id, JsonObject patch, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Update(entity, id, patch));
+
+    public Task<bool> DeleteAsync(string entity, string id, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Delete(entity, id));
     public JsonObject? Get(string entity, string id)
     {
         lock (_gate) return Table(entity).TryGetValue(id, out var row) ? Clone(row) : null;

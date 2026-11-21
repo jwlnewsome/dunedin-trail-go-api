@@ -14,7 +14,7 @@ public class GetTrailsForMapTests
         context.Request.QueryString = new QueryString(queryString);
         var function = new GetTrailsForMap(new EntityStore());
 
-        var result = Assert.IsType<JsonResult>(function.Run(context.Request));
+        var result = Assert.IsType<JsonResult>(await function.Run(context.Request));
         var json = JsonSerializer.Serialize(result.Value, (JsonSerializerOptions)result.SerializerSettings!);
         return (result.StatusCode ?? StatusCodes.Status200OK, JsonDocument.Parse(json).RootElement);
     }

@@ -28,10 +28,10 @@ public class EntityFunctionsTests
     }
 
     [Fact]
-    public void List_FiltersWithEqualityAndIn_AndSorts()
+    public async Task List_FiltersWithEqualityAndIn_AndSorts()
     {
         var q = Uri.EscapeDataString("""{"status":{"$in":["active","draft"]},"activity_types":"Walking"}""");
-        var (status, body) = Read(Functions.List(Request($"?q={q}&sort=-distance_km"), "Trail"));
+        var (status, body) = Read(await Functions.List(Request($"?q={q}&sort=-distance_km"), "Trail"));
 
         Assert.Equal(200, status);
         var rows = body.EnumerateArray().ToList();
@@ -55,16 +55,16 @@ public class EntityFunctionsTests
         Assert.Equal(3, updated.GetProperty("rating").GetInt32());
         Assert.Equal("trail-ross-creek", updated.GetProperty("trail_id").GetString());
 
-        Assert.Equal(200, Read(Functions.Delete(Request(), "TrailReview", id)).Status);
-        Assert.Equal(404, Read(Functions.Get(Request(), "TrailReview", id)).Status);
+        Assert.Equal(200, Read(await Functions.Delete(Request(), "TrailReview", id)).Status);
+        Assert.Equal(404, Read(await Functions.Get(Request(), "TrailReview", id)).Status);
     }
 
     [Fact]
-    public void NewTrails_AppearInPublicTrailList()
+    public async Task NewTrails_AppearInPublicTrailList()
     {
         _store.Create("Trail", new() { ["name"] = "Brand New Track", ["difficulty"] = "easy" }, SeedData.AdminEmail);
 
-        var (_, body) = Read(new GetTrailsForMap(_store).Run(Request()));
+        var (_, body) = Read(await new GetTrailsForMap(_store).Run(Request()));
         Assert.Equal("Brand New Track", body[0].GetProperty("name").GetString());
     }
 
@@ -72,9 +72,9 @@ public class EntityFunctionsTests
     [InlineData("Password", "")]
     [InlineData("Trail", "?q=not-json")]
     [InlineData("Trail", "?limit=0")]
-    public void List_RejectsBadInput(string entity, string query)
+    public async Task List_RejectsBadInput(string entity, string query)
     {
-        var (status, body) = Read(Functions.List(Request(query), entity));
+        var (status, body) = Read(await Functions.List(Request(query), entity));
         Assert.InRange(status, 400, 404);
         Assert.True(body.TryGetProperty("error", out _));
     }
@@ -85,7 +85,7 @@ public class EntityFunctionsTests
         var auth = new AuthFunctions(_store);
         await auth.UpdateMe(Request(body: """{"map_prefs":{"style":"topo"},"role":"user"}"""), default);
 
-        var (_, me) = Read(auth.Me(Request()));
+        var (_, me) = Read(await auth.Me(Request()));
         Assert.Equal("admin", me.GetProperty("role").GetString());
         Assert.Equal("topo", me.GetProperty("map_prefs").GetProperty("style").GetString());
     }
